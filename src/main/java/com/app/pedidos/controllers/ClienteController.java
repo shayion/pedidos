@@ -1,6 +1,6 @@
 package com.app.pedidos.controllers;
 
-import com.app.pedidos.models.Cliente;
+import com.app.pedidos.models.ClienteModel;
 import com.app.pedidos.services.ClienteService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,12 +17,12 @@ public class ClienteController {
     }
 
     @GetMapping
-    public List<Cliente> listarTodos() {
+    public List<ClienteModel> listarTodos() {
         return clienteService.listarTodos();
     }
 
     @PostMapping
-    public Cliente salvar(@RequestBody Cliente cliente) {
+    public ClienteModel salvar(@RequestBody ClienteModel cliente) {
         return clienteService.salvar(cliente);
     }
 
