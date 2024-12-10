@@ -1,6 +1,7 @@
 package com.app.pedidos.services;
 
 import com.app.pedidos.dtos.PedidoDTO;
+import com.app.pedidos.models.ClienteModel;
 import com.app.pedidos.models.PedidoModel;
 import com.app.pedidos.repositories.PedidoRepository;
 import org.springframework.stereotype.Service;
@@ -20,18 +21,53 @@ public class PedidoService {
         this.clienteService = clienteService;
     }
 
+    public PedidoModel atualizarPedido(Long id, PedidoDTO pedidoDTO) {
+        // Lógica para buscar o pedido pelo id
+        PedidoModel pedidoExistente = pedidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
+
+        // Atualizando as propriedades do pedido
+        pedidoExistente.setDescricao(pedidoDTO.getDescricao());
+        pedidoExistente.setValor(pedidoDTO.getValor());
+        pedidoExistente.setStatus(pedidoDTO.getStatus());
+
+        // Salvar o pedido atualizado
+        return pedidoRepository.save(pedidoExistente);
+    }
+
     // Criar um pedido a partir do DTO
     public PedidoModel criarPedido(PedidoDTO pedidoDTO) {
+        // Log para verificar os dados recebidos
+        System.out.println("Recebendo PedidoDTO: ");
+        System.out.println("Descricao: " + pedidoDTO.getDescricao());
+        System.out.println("Valor: " + pedidoDTO.getValor());
+        System.out.println("Status: " + pedidoDTO.getStatus());
+        System.out.println("Cliente ID: " + pedidoDTO.getClienteId());
+
+        // Verificar se o cliente existe
+        Optional<ClienteModel> clienteOpt = clienteService.buscarPorId(pedidoDTO.getClienteId());
+        if (clienteOpt.isPresent()) {
+            System.out.println("Cliente encontrado: " + clienteOpt.get().getNome());
+        } else {
+            System.out.println("Cliente não encontrado!");
+        }
+
+
         PedidoModel pedido = new PedidoModel();
         pedido.setDescricao(pedidoDTO.getDescricao());
         pedido.setValor(pedidoDTO.getValor());
         pedido.setStatus(pedidoDTO.getStatus());
 
         // Usar clienteService para buscar o cliente
-        pedido.setCliente(clienteService.buscarPorId(pedidoDTO.getClienteId())
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado")));
+        pedido.setCliente(clienteOpt.orElseThrow(() -> new RuntimeException("Cliente não encontrado")));
 
-        return salvar(pedido);  // Salvar o pedido
+        // Salvar o pedido
+        PedidoModel savedPedido = salvar(pedido);
+
+        // Log para verificar o pedido salvo
+        System.out.println("Pedido salvo: " + savedPedido.getId());
+
+        return savedPedido;  // Salvar o pedido
     }
 
     // Método para salvar o pedido no banco de dados

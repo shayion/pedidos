@@ -17,6 +17,18 @@ public class ClienteController {
         this.clienteService = clienteService;
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<ClienteModel> atualizarCliente(@PathVariable Long id, @RequestBody ClienteModel clienteAtualizado) {
+        return clienteService.buscarPorId(id).map(clienteExistente -> {
+            clienteExistente.setNome(clienteAtualizado.getNome());
+            clienteExistente.setCpf(clienteAtualizado.getCpf());
+            clienteExistente.setTelefone(clienteAtualizado.getTelefone());
+            clienteExistente.setEndereco(clienteAtualizado.getEndereco());
+            ClienteModel clienteSalvo = clienteService.salvar(clienteExistente);
+            return ResponseEntity.ok(clienteSalvo);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping
     public List<ClienteModel> listarTodos() {
         return clienteService.listarTodos();
