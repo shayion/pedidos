@@ -1,14 +1,13 @@
 package com.app.pedidos.models;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "pedidos")
-@Data  // Lombok gera getters, setters, equals, hashCode, toString e construtores
+@Data
 public class PedidoModel {
 
     @Id
@@ -16,16 +15,20 @@ public class PedidoModel {
     private Long id;
 
     @Column(nullable = false, length = 255)
+    @NotNull(message = "Descrição não pode ser nula")
+    @Size(min = 5, message = "Descrição deve ter no mínimo 5 caracteres")
     private String descricao;
 
     @Column(nullable = false, precision = 10, scale = 2)
+    @NotNull(message = "Valor não pode ser nulo")
     private BigDecimal valor;
 
     @Column(nullable = false)
+    @NotNull(message = "Status não pode ser nulo")
     private String status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id", nullable = false)
-    @JsonBackReference  // Evita o loop infinito
     private ClienteModel cliente;
 }
+

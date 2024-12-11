@@ -6,6 +6,7 @@ import com.app.pedidos.models.PedidoModel;
 import com.app.pedidos.repositories.PedidoRepository;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,10 +22,14 @@ public class PedidoService {
         this.clienteService = clienteService;
     }
 
+    // Atualizar um pedido existente
     public PedidoModel atualizarPedido(Long id, PedidoDTO pedidoDTO) {
         // Lógica para buscar o pedido pelo id
         PedidoModel pedidoExistente = pedidoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
+
+        // Verificar se os campos obrigatórios estão presentes
+        validarCamposObrigatorios(pedidoDTO);
 
         // Atualizando as propriedades do pedido
         pedidoExistente.setDescricao(pedidoDTO.getDescricao());
@@ -37,6 +42,9 @@ public class PedidoService {
 
     // Criar um pedido a partir do DTO
     public PedidoModel criarPedido(PedidoDTO pedidoDTO) {
+        // Lógica para verificar e validar os campos obrigatórios
+        validarCamposObrigatorios(pedidoDTO);
+
         // Log para verificar os dados recebidos
         System.out.println("Recebendo PedidoDTO: ");
         System.out.println("Descricao: " + pedidoDTO.getDescricao());
@@ -46,20 +54,16 @@ public class PedidoService {
 
         // Verificar se o cliente existe
         Optional<ClienteModel> clienteOpt = clienteService.buscarPorId(pedidoDTO.getClienteId());
-        if (clienteOpt.isPresent()) {
-            System.out.println("Cliente encontrado: " + clienteOpt.get().getNome());
-        } else {
-            System.out.println("Cliente não encontrado!");
+        if (!clienteOpt.isPresent()) {
+            throw new RuntimeException("Cliente não encontrado!");
         }
 
-
+        // Criando o novo pedido
         PedidoModel pedido = new PedidoModel();
         pedido.setDescricao(pedidoDTO.getDescricao());
         pedido.setValor(pedidoDTO.getValor());
         pedido.setStatus(pedidoDTO.getStatus());
-
-        // Usar clienteService para buscar o cliente
-        pedido.setCliente(clienteOpt.orElseThrow(() -> new RuntimeException("Cliente não encontrado")));
+        pedido.setCliente(clienteOpt.get());  // Associe o cliente encontrado
 
         // Salvar o pedido
         PedidoModel savedPedido = salvar(pedido);
@@ -67,7 +71,7 @@ public class PedidoService {
         // Log para verificar o pedido salvo
         System.out.println("Pedido salvo: " + savedPedido.getId());
 
-        return savedPedido;  // Salvar o pedido
+        return savedPedido;  // Retorna o pedido salvo
     }
 
     // Método para salvar o pedido no banco de dados
@@ -88,5 +92,18 @@ public class PedidoService {
     // Deletar um pedido
     public void deletar(Long id) {
         pedidoRepository.deleteById(id);
+    }
+
+    // Método para validar campos obrigatórios do PedidoDTO
+    private void validarCamposObrigatorios(PedidoDTO pedidoDTO) {
+        if (pedidoDTO.getDescricao() == null || pedidoDTO.getDescricao().isEmpty()) {
+            throw new RuntimeException("Descrição do pedido é obrigatória!");
+        }
+        if (pedidoDTO.getValor() == null || pedidoDTO.getValor().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("Valor do pedido deve ser maior que zero!");
+        }
+        if (pedidoDTO.getClienteId() == null) {
+            throw new RuntimeException("Cliente é obrigatório!");
+        }
     }
 }
