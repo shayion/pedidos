@@ -1,4 +1,5 @@
 package com.app.pedidos.models;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -31,6 +32,7 @@ public class ClienteModel {
     private String endereco;
 
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<PedidoModel> pedidos;
 }
 

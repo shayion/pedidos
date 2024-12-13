@@ -1,4 +1,5 @@
 package com.app.pedidos.models;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -29,6 +30,7 @@ public class PedidoModel {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id", nullable = false)
+    @JsonBackReference
     private ClienteModel cliente;
 }
 
